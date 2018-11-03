@@ -5,6 +5,7 @@
 
 from twisted.internet.protocol import Protocol, Factory
 from twisted.internet import reactor
+from twisted.python import log
 
 ### Protocol Implementation
 
@@ -36,11 +37,13 @@ class User ():
 class Echo(Protocol):
     def connectionMade(self):
         self.factory.userNum = self.factory.userNum + 1
+        log.msg(self.factory.userNum)
         self.transport.write(b"ok")
         self.factory.users.append(User(self.factory.userNum,self.transport.getPeer().host,self.transport.getPeer().port))
         #print (self.factory.users[0].GetStringInf())
         self.transport.write(str(self.factory.userNum).encode())
     def dataReceived(self, data):
+        log.msg(curentUser.GetStringInf())
         print ("IP{0} HOST {1}".format(self.transport.getPeer().host,self.transport.getPeer().port))
         curentUser = GetUser(self.transport.getPeer().host, self.transport.getPeer().port, self.factory.users)
         print(curentUser.GetStringInf())
@@ -78,11 +81,16 @@ class GameFactory(Factory):
         self.users = [] 
         
 def main():
-    f = GameFactory()
-    f.protocol = Echo
-    reactor.listenTCP(8000, f)
-    reactor.run()
-
+    try:
+        log.startLogging(open('logServ.log', 'w'))
+        log.msg('Start')
+        f = GameFactory()
+        f.protocol = Echo
+        reactor.listenTCP(8000, f)
+        reactor.run()
+    except:
+        log.err()
+        
 if __name__ == '__main__':
     print ("start")
     main()
